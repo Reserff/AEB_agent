@@ -1,5 +1,23 @@
-{
-  "cases": [
-    { "id": 1, "input": "example", "expected": "example" }
-  ]
-}
+[
+  {
+    "case_id": "AEB_001",
+    "speed_mps": 20.0,
+    "distance_m": 35.0,
+    "relative_speed_mps": 15.0,
+    "brake_triggered": true
+  },
+  {
+    "case_id": "AEB_002",
+    "speed_mps": 15.0,
+    "distance_m": 8.0,
+    "relative_speed_mps": 10.0,
+    "brake_triggered": false
+  },
+  {
+    "case_id": "AEB_003",
+    "speed_mps": 25.0,
+    "distance_m": 50.0,
+    "relative_speed_mps": 5.0,
+    "brake_triggered": false
+  }
+]
