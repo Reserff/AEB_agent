@@ -16,19 +16,20 @@ class AEBCase(TypedDict):
 
 
 class AnalysisResult(TypedDict):
-    """Calculated values displayed for one AEB case."""
+    """Structured result returned by the AEB analysis tool."""
 
     case_id: str
     ttc: float
     risk: str
-    status: str
+    abnormal: bool
 
-
+# 加载cases数据文件
 def load_cases(file_path: str | Path) -> list[AEBCase]:
     """Load AEB cases from a UTF-8 JSON file."""
 
     path = Path(file_path)
     with path.open("r", encoding="utf-8") as file:
+        # 读取cases.json文件
         cases = json.load(file)
 
     if not isinstance(cases, list):
@@ -36,7 +37,7 @@ def load_cases(file_path: str | Path) -> list[AEBCase]:
 
     return cases
 
-
+# 计算TTC
 def calculate_ttc(distance: float, relative_speed: float) -> float:
     """Calculate time to collision in seconds.
 
@@ -48,7 +49,7 @@ def calculate_ttc(distance: float, relative_speed: float) -> float:
         return float("inf")
     return distance / relative_speed
 
-
+# 危险等级分类
 def classify_risk(ttc: float) -> str:
     """Classify collision risk using the specified TTC thresholds."""
 
@@ -58,39 +59,38 @@ def classify_risk(ttc: float) -> str:
         return "MEDIUM"
     return "LOW"
 
-
-def detect_abnormal(risk: str, brake_triggered: bool) -> str:
+# 检测异常
+def detect_abnormal(risk: str, brake_triggered: bool) -> bool:
     """Flag a high-risk case with no brake activation as abnormal."""
 
-    if risk == "HIGH" and not brake_triggered:
-        return "ABNORMAL"
-    return "NORMAL"
+    return risk == "HIGH" and not brake_triggered
 
-
+# 分析数据
 def analyze_case(case: AEBCase) -> AnalysisResult:
     """Calculate all output fields for one AEB case."""
 
     ttc = calculate_ttc(case["distance_m"], case["relative_speed_mps"])
     risk = classify_risk(ttc)
-    status = detect_abnormal(risk, case["brake_triggered"])
+    abnormal = detect_abnormal(risk, case["brake_triggered"])
 
     return {
         "case_id": case["case_id"],
         "ttc": ttc,
         "risk": risk,
-        "status": status,
+        "abnormal": abnormal,
     }
 
+# 打印结果
+def display_result(result: AnalysisResult) -> None:
+    """Display a structured analysis result in a human-readable format."""
 
-def print_result(result: AnalysisResult) -> None:
-    """Print one analysis result in the required human-readable format."""
-
+    status = "ABNORMAL" if result["abnormal"] else "NORMAL"
     print(f'Case: {result["case_id"]}')
     print(f'TTC: {result["ttc"]:.2f} s')
     print(f'Risk: {result["risk"]}')
-    print(f'Status: {result["status"]}')
+    print(f"Status: {status}")
 
-
+# 主函数，循环执行
 def main() -> None:
     """Load, analyze, and print every case in cases.json."""
 
@@ -100,7 +100,8 @@ def main() -> None:
     for index, case in enumerate(cases):
         if index > 0:
             print()
-        print_result(analyze_case(case))
+        result = analyze_case(case)
+        display_result(result)
 
 
 if __name__ == "__main__":

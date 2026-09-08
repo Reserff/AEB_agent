@@ -8,3 +8,6 @@
 2. 能完成后端 + Agent + 数据库 + 部署
 3. 能构建真正为自己工作的 AI 应用
 4. 完成至少一个可以用于求职的 Agent 项目
+
+测试用例执行
+python -m pytest day01_python -v
