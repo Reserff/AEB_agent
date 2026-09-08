@@ -5,14 +5,19 @@ from pathlib import Path
 from typing import TypedDict
 
 
-class AEBCase(TypedDict):
-    """Input fields required for one AEB case."""
+class AEBAnalysisInput(TypedDict):
+    """Fields used to analyze one AEB case."""
 
     case_id: str
-    speed_mps: float
     distance_m: float
     relative_speed_mps: float
     brake_triggered: bool
+
+
+class AEBCase(AEBAnalysisInput):
+    """Complete AEB case loaded from the input data file."""
+
+    speed_mps: float
 
 
 class AnalysisResult(TypedDict):
@@ -66,7 +71,7 @@ def detect_abnormal(risk: str, brake_triggered: bool) -> bool:
     return risk == "HIGH" and not brake_triggered
 
 # 分析数据
-def analyze_case(case: AEBCase) -> AnalysisResult:
+def analyze_case(case: AEBAnalysisInput) -> AnalysisResult:
     """Calculate all output fields for one AEB case."""
 
     ttc = calculate_ttc(case["distance_m"], case["relative_speed_mps"])
@@ -79,6 +84,7 @@ def analyze_case(case: AEBCase) -> AnalysisResult:
         "risk": risk,
         "abnormal": abnormal,
     }
+
 
 # 打印结果
 def display_result(result: AnalysisResult) -> None:
