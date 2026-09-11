@@ -11,3 +11,6 @@
 
 测试用例执行
 python -m pytest day01_python -v
+
+运行主程序：
+python day01_python/main.py
