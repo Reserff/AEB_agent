@@ -1,4 +1,5 @@
 from day02_tool_calling.agent import analyze_aeb_case, tools
+import pytest
 
 
 def test_analyze_aeb_case_high_risk() -> None:
@@ -33,19 +34,42 @@ def test_analyze_aeb_case_tool_schema() -> None:
     assert len(tools) == 1
 
     tool = tools[0]
-    assert tool["type"] == "function"
-    assert tool["name"] == "analyze_aeb_case"
-    assert tool["strict"] is True
 
-    parameters = tool["parameters"]
+    assert tool["type"] == "function"
+
+    function = tool["function"]
+
+    assert function["name"] == "analyze_aeb_case"
+
+    parameters = function["parameters"]
+
     assert parameters["type"] == "object"
     assert parameters["additionalProperties"] is False
+
     assert set(parameters["properties"]) == {
         "distance_m",
         "relative_speed_mps",
         "brake_triggered",
     }
-    assert set(parameters["required"]) == set(parameters["properties"])
+
+    assert set(parameters["required"]) == set(
+        parameters["properties"]
+    )
+
     assert parameters["properties"]["distance_m"]["type"] == "number"
-    assert parameters["properties"]["relative_speed_mps"]["type"] == "number"
-    assert parameters["properties"]["brake_triggered"]["type"] == "boolean"
+    assert (
+        parameters["properties"]["relative_speed_mps"]["type"]
+        == "number"
+    )
+    assert (
+        parameters["properties"]["brake_triggered"]["type"]
+        == "boolean"
+    )
+    
+def test_negative_distance_is_invalid() -> None:
+    with pytest.raises(ValueError):
+        analyze_aeb_case(
+            distance_m=-10.0,
+            relative_speed_mps=5.0,
+            brake_triggered=False,
+        )

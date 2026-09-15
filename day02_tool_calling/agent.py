@@ -32,7 +32,10 @@ def analyze_aeb_case(
     relative_speed_mps: float,
     brake_triggered: bool,
 ) -> dict:
-    """Expose the Day 1 AEB analyzer through an LLM-friendly interface."""
+    if distance_m < 0:
+        raise ValueError(
+            "distance_m must be greater than or equal to 0"
+    )
 
     result = analyze_case(
         {
@@ -48,6 +51,18 @@ def analyze_aeb_case(
         "risk": result["risk"],
         "abnormal": result["abnormal"],
     }
+
+def execute_tool(
+    function_name: str,
+    arguments: dict,
+) -> dict:
+
+    if function_name == "analyze_aeb_case":
+        return analyze_aeb_case(**arguments)
+
+    raise ValueError(
+        f"Unsupported tool: {function_name}"
+    )
     
 def run_agent(user_input: str) -> dict:
 
@@ -101,7 +116,10 @@ def run_agent(user_input: str) -> dict:
         )
 
         # Step 3：Python 真正执行工具
-        result = analyze_aeb_case(**arguments)
+        result = execute_tool(
+            function_name=function_name,
+            arguments=arguments,
+        )
         tool_results.append(result)
 
         # Step 4：把真实计算结果返回给模型
