@@ -106,20 +106,23 @@ def run_agent(user_input: str) -> dict:
     for tool_call in tool_calls:
         function_name = tool_call.function.name
 
-        if function_name != "analyze_aeb_case":
-            raise ValueError(
-                f"Unsupported tool: {function_name}"
-            )
 
         arguments = json.loads(
             tool_call.function.arguments
         )
 
         # Step 3：Python 真正执行工具
-        result = execute_tool(
-            function_name=function_name,
-            arguments=arguments,
+        try:
+            result = execute_tool(
+        function_name=function_name,
+        arguments=arguments,
         )
+
+        except Exception as exc:
+            result = {
+        "success": False,
+        "error": str(exc),
+        }
         tool_results.append(result)
 
         # Step 4：把真实计算结果返回给模型

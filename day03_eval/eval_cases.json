@@ -1,0 +1,22 @@
+[
+  {
+    "name": "high_risk_case",
+    "prompt": "距离8米，相对速度10m/s，没有制动，请分析风险。",
+    "expected_tool_called": true
+  },
+  {
+    "name": "low_risk_case",
+    "prompt": "距离50米，相对速度5m/s，没有制动，请分析风险。",
+    "expected_tool_called": true
+  },
+  {
+    "name": "knowledge_question",
+    "prompt": "AEB是什么意思？",
+    "expected_tool_called": false
+  },
+  {
+    "name": "irrelevant_question",
+    "prompt": "Python中的list和tuple有什么区别？",
+    "expected_tool_called": false
+  }
+]
