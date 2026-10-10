@@ -2,8 +2,10 @@ import json
 import sys
 from pathlib import Path
 
+# 寻找路径，把项目根目录放入模块搜索路径
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
+    # 将根目录放在搜索路径最前
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from day02_tool_calling.agent import run_agent

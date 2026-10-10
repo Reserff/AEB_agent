@@ -106,17 +106,17 @@ def run_agent(user_input: str) -> dict:
     for tool_call in tool_calls:
         function_name = tool_call.function.name
 
-
-        arguments = json.loads(
-            tool_call.function.arguments
-        )
-
         # Step 3：Python 真正执行工具
         try:
+            arguments = json.loads(
+                tool_call.function.arguments
+            )
+
+            
             result = execute_tool(
-        function_name=function_name,
-        arguments=arguments,
-        )
+                function_name=function_name,
+                arguments=arguments,
+            )
 
         except Exception as exc:
             result = {
