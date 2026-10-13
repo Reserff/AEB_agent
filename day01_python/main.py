@@ -1,6 +1,7 @@
 """A small analyzer for Autonomous Emergency Braking (AEB) cases."""
 
 import json
+import math
 from pathlib import Path
 from typing import TypedDict
 
@@ -78,11 +79,12 @@ def analyze_case(case: AEBAnalysisInput) -> AnalysisResult:
     risk = classify_risk(ttc)
     abnormal = detect_abnormal(risk, case["brake_triggered"])
 
+    ttc = result["ttc"]
     return {
         "case_id": case["case_id"],
-        "ttc": ttc,
-        "risk": risk,
-        "abnormal": abnormal,
+        "ttc": ttc if math.isfinite(ttc) else None,
+        "risk": result["risk"],
+        "abnormal": result["abnormal"],
     }
 
 

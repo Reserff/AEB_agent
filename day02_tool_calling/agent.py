@@ -2,8 +2,10 @@ import sys
 import os
 import json
 
-from pathlib import Path
 
+import math
+from functools import lru_cache
+from pathlib import Path
 from dotenv import load_dotenv
 # from openai import OpenAI
 from zai import ZhipuAiClient
@@ -14,18 +16,24 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from day01_python.main import analyze_case
 
-load_dotenv()
-
-# 初始化客户端
-client = ZhipuAiClient(
-    api_key=os.getenv("GLM_API_KEY"),  
-    base_url=os.getenv("GLM_API_BASE_URL"),
-    
-
-)
+load_dotenv(PROJECT_ROOT / ".env")
 
 MODEL=os.getenv("GLM_MODEL") # 模型名称
 
+@lru_cache(maxsize=1)
+def get_client():
+    api_key = os.getenv("GLM_API_KEY")
+    base_url = os.getenv("GLM_API_BASE_URL")
+
+    if not api_key:
+        raise RuntimeError("GLM_API_KEY is not configured")
+
+    options = {"api_key": api_key}
+
+    if base_url:
+        options["base_url"] = base_url
+
+    return ZhipuAiClient(**options)
 
 def analyze_aeb_case(
     distance_m: float,
@@ -68,6 +76,8 @@ def run_agent(user_input: str) -> dict:
 
     if not MODEL:
         raise RuntimeError("GLM_MODEL is not configured")
+    
+    client = get_client()
 
     messages = [
         {
