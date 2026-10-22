@@ -25,7 +25,7 @@ class AnalysisResult(TypedDict):
     """Structured result returned by the AEB analysis tool."""
 
     case_id: str
-    ttc: float
+    ttc: float | None
     risk: str
     abnormal: bool
 
@@ -75,16 +75,27 @@ def detect_abnormal(risk: str, brake_triggered: bool) -> bool:
 def analyze_case(case: AEBAnalysisInput) -> AnalysisResult:
     """Calculate all output fields for one AEB case."""
 
-    ttc = calculate_ttc(case["distance_m"], case["relative_speed_mps"])
-    risk = classify_risk(ttc)
-    abnormal = detect_abnormal(risk, case["brake_triggered"])
+    # 1. 计算碰撞时间
+    ttc = calculate_ttc(
+        case["distance_m"],
+        case["relative_speed_mps"]
+    )
 
-    ttc = result["ttc"]
+    # 2. 判断风险等级
+    risk = classify_risk(ttc)
+
+    # 3. 判断是否异常
+    abnormal = detect_abnormal(
+        risk,
+        case["brake_triggered"]
+    )
+
+    # 4. 返回结构化结果
     return {
         "case_id": case["case_id"],
         "ttc": ttc if math.isfinite(ttc) else None,
-        "risk": result["risk"],
-        "abnormal": result["abnormal"],
+        "risk": risk,
+        "abnormal": abnormal,
     }
 
 
@@ -94,9 +105,15 @@ def display_result(result: AnalysisResult) -> None:
 
     status = "ABNORMAL" if result["abnormal"] else "NORMAL"
     print(f'Case: {result["case_id"]}')
-    print(f'TTC: {result["ttc"]:.2f} s')
-    print(f'Risk: {result["risk"]}')
-    print(f"Status: {status}")
+    
+    ttc = result["ttc"]
+    if ttc is None:
+        print("TTC: N/A")
+    else:
+        print(f"TTC: {ttc:.2f} s")
+        
+        print(f'Risk: {result["risk"]}')
+        print(f"Status: {status}")
 
 # 主函数，循环执行
 def main() -> None:
