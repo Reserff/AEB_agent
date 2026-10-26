@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 import day04_fastapi.api as api
-
+import uuid
 
 client = TestClient(api.app)
 
@@ -55,3 +55,55 @@ def test_analyze_with_mock(monkeypatch):
     assert data["tool_called"] is True
     assert data["tool_results"][0]["ttc"] == 0.8
     assert data["answer"] == "该场景存在较高风险"
+    
+def test_analyze_failure_returns_500(monkeypatch):
+
+    def fake_run_agent(prompt):
+        raise RuntimeError("模拟模型服务故障")
+
+    monkeypatch.setattr(
+        api,
+        "run_agent",
+        fake_run_agent,
+        )
+
+    response = client.post(
+        "/analyze",
+        json={"prompt": "分析AEB场景"},
+    )
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == (
+        "分析服务执行失败，请查看服务端日志"
+    )
+    
+def test_request_trace_headers():
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+
+    # 检查是否生成请求编号
+    request_id = response.headers["X-Request-ID"]
+
+    # 验证请求编号是否为合法 UUID
+    uuid.UUID(request_id)
+
+    # 检查耗时
+    duration_ms = float(
+        response.headers["X-Process-Time-Ms"]
+    )
+
+    assert duration_ms >= 0
+
+
+def test_request_id_is_unique():
+
+    response1 = client.get("/health")
+    response2 = client.get("/health")
+
+    request_id1 = response1.headers["X-Request-ID"]
+    request_id2 = response2.headers["X-Request-ID"]
+
+    # 两次请求应当有不同的 ID
+    assert request_id1 != request_id2

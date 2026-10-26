@@ -101,19 +101,19 @@ def analyze_case(case: AEBAnalysisInput) -> AnalysisResult:
 
 # 打印结果
 def display_result(result: AnalysisResult) -> None:
-    """Display a structured analysis result in a human-readable format."""
-
     status = "ABNORMAL" if result["abnormal"] else "NORMAL"
+
     print(f'Case: {result["case_id"]}')
-    
+
     ttc = result["ttc"]
+
     if ttc is None:
         print("TTC: N/A")
     else:
         print(f"TTC: {ttc:.2f} s")
-        
-        print(f'Risk: {result["risk"]}')
-        print(f"Status: {status}")
+
+    print(f'Risk: {result["risk"]}')
+    print(f"Status: {status}")
 
 # 主函数，循环执行
 def main() -> None:
