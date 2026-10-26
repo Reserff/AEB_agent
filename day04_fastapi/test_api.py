@@ -76,6 +76,8 @@ def test_analyze_failure_returns_500(monkeypatch):
     assert response.json()["detail"] == (
         "分析服务执行失败，请查看服务端日志"
     )
+    assert "X-Request-ID" in response.headers
+    assert "X-Process-Time-Ms" in response.headers
     
 def test_request_trace_headers():
 
@@ -107,3 +109,37 @@ def test_request_id_is_unique():
 
     # 两次请求应当有不同的 ID
     assert request_id1 != request_id2
+    
+    
+def test_analyze_route_registered_once():
+    routes = [
+        route
+        for route in api.app.routes
+        if getattr(route, "path", None) == "/analyze"
+        and "POST" in (
+            getattr(route, "methods", set()) or set()
+        )
+    ]
+
+    assert len(routes) == 1
+
+def test_ready_when_config_exists(monkeypatch):
+    monkeypatch.setenv("GLM_MODEL", "test-model")
+    monkeypatch.setenv("GLM_API_KEY", "test-key")
+
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready"}
+
+
+def test_not_ready_when_api_key_missing(monkeypatch):
+    monkeypatch.setenv("GLM_MODEL", "test-model")
+    monkeypatch.delenv("GLM_API_KEY", raising=False)
+
+    response = client.get("/ready")
+
+    assert response.status_code == 503
+    assert "GLM_API_KEY" in (
+        response.json()["detail"]["missing_settings"]
+    )

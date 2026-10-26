@@ -7,6 +7,7 @@ import uuid
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 from day02_tool_calling.agent import run_agent
+from day04_fastapi.config import get_missing_settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -89,7 +90,6 @@ def health() -> dict:
         "status": "ok"
     }
     
-@app.post("/analyze", response_model=AnalyzeResponse)
 @app.post(
     "/analyze",
     response_model=AnalyzeResponse,
@@ -115,3 +115,18 @@ def analyze(
             status_code=500,
             detail="分析服务执行失败，请查看服务端日志",
         ) from exc
+        
+@app.get("/ready")
+def readiness():
+    missing = get_missing_settings()
+
+    if missing:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "not_ready",
+                "missing_settings": missing,
+            },
+        )
+
+    return {"status": "ready"}
