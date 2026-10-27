@@ -18,7 +18,6 @@ from day01_python.main import analyze_case
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-MODEL=os.getenv("GLM_MODEL") # 模型名称
 
 @lru_cache(maxsize=1)
 def get_client():
@@ -74,7 +73,9 @@ def execute_tool(
     
 def run_agent(user_input: str) -> dict:
 
-    if not MODEL:
+    model = os.getenv("GLM_MODEL")
+    
+    if not model:
         raise RuntimeError("GLM_MODEL is not configured")
     
     client = get_client()
@@ -88,7 +89,7 @@ def run_agent(user_input: str) -> dict:
 
     # Step 1：把自然语言和 Tool Schema 发给模型
     first_response = client.chat.completions.create(
-        model=MODEL,
+        model=model,
         messages=messages,
         tools=tools,
         tool_choice="auto",
@@ -149,7 +150,7 @@ def run_agent(user_input: str) -> dict:
 
     # 让模型读取 Python 的计算结果并生成最终解释
     final_response = client.chat.completions.create(
-        model=MODEL,
+        model=model,
         messages=messages,
         tools=tools,
         tool_choice="auto",
