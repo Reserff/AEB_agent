@@ -210,6 +210,15 @@ tempCodeRunnerFile.py
 # PyPI configuration file
 .pypirc
 
+# Private vehicle recordings and generated local analysis (never commit)
+*.mcap
+*.jsonl
+/data_ev/
+/local_outputs/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
